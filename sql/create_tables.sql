@@ -1,3 +1,4 @@
+
 CREATE TABLE site (
     site_name VARCHAR(200) NOT NULL,
     site_id SERIAL PRIMARY KEY,
@@ -35,4 +36,35 @@ CREATE TABLE course (
     is_standalone BOOLEAN DEFAULT FALSE,
     difficulty_level VARCHAR(20) DEFAULT 'basic',
     is_active BOOLEAN DEFAULT TRUE
+);
+CREATE TABLE education_leader (
+    leader_id INTEGER PRIMARY KEY REFERENCES person(person_id) ON DELETE CASCADE,
+    department VARCHAR(100)
+    employee_number VARCHAR(25) UNIQUE NOT NULL,
+);
+
+CREATE TABLE person_details (
+    person_detail_id SERIAL PRIMARY KEY,
+    person_id INTEGER UNIQUE NOT NULL REFERENCES person(person_id) ON DELETE CASCADE,
+    personal_number VARCHAR(15) UNIQUE NOT NULL,
+    email VARCHAR(300) UNIQUE NOT NULL
+);
+
+CREATE TABLE student (
+    student_id INTEGER PRIMARY KEY REFERENCES person(person_id) ON DELETE CASCADE,
+    program_id INTEGER NOT NULL REFERENCES program(program_id),
+    class_id INTEGER NOT NULL REFERENCES class(class_id),
+    student_number VARCHAR(30) UNIQUE NOT NULL,
+    enrollment_date DATE DEFAULT CURRENT_DATE,
+    status VARCHAR(20) DEFAULT 'active'
+);
+
+CREATE TABLE student_enrollment (
+    enrollment_id SERIAL PRIMARY KEY,
+    student_id INTEGER NOT NULL REFERENCES student(student_id) ON DELETE CASCADE,
+    assignment_id INTEGER NOT NULL REFERENCES course_assignment(assignment_id) ON DELETE CASCADE,
+    enrollment_date DATE DEFAULT CURRENT_DATE,
+    grade VARCHAR(2),
+    status VARCHAR(20) DEFAULT 'enrolled',
+    UNIQUE (student_id, assignment_id)
 );

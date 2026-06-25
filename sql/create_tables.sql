@@ -1,8 +1,21 @@
 
+DROP TABLE IF EXISTS student_enrollment CASCADE;
+DROP TABLE IF EXISTS course_assignment CASCADE;
+DROP TABLE IF EXISTS program_course CASCADE;
+DROP TABLE IF EXISTS student CASCADE;
+DROP TABLE IF EXISTS class CASCADE;
+DROP TABLE IF EXISTS educator CASCADE;
+DROP TABLE IF EXISTS person_details CASCADE;
+DROP TABLE IF EXISTS education_leader CASCADE;
+DROP TABLE IF EXISTS course CASCADE;
+DROP TABLE IF EXISTS program CASCADE;
+DROP TABLE IF EXISTS person CASCADE;
+DROP TABLE IF EXISTS site CASCADE;
+
 -- Skolans anläggningar och plats
 CREATE TABLE site (
-    site_name VARCHAR(200) NOT NULL,
     site_id SERIAL PRIMARY KEY,
+    site_name VARCHAR(200) NOT NULL,
     site_code VARCHAR(15) UNIQUE NOT NULL,
     city VARCHAR(100) NOT NULL,
     address VARCHAR(300) NOT NULL,
@@ -10,19 +23,19 @@ CREATE TABLE site (
     phone VARCHAR(20)
 );
 
--- Info om personer (student, lärare, utbildare, konsult)
+-- Info om personer
 CREATE TABLE person (
     person_id SERIAL PRIMARY KEY,
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
-    person_type VARCHAR(50) NOT NULL CHECK (person_type IN ('student','educator','education_leader', 'consultant')),
+    person_type VARCHAR(50) NOT NULL CHECK (person_type IN ('student', 'educator', 'education_leader', 'consultant')),
     birth_date DATE
 );
 
--- Vad för program
+-- Utbildningsprogram
 CREATE TABLE program (
-    program_name VARCHAR(100) NOT NULL,
     program_id SERIAL PRIMARY KEY,
+    program_name VARCHAR(100) NOT NULL,
     program_code VARCHAR(10) NOT NULL UNIQUE,
     total_credits INTEGER NOT NULL,
     duration_weeks INTEGER,
@@ -30,10 +43,10 @@ CREATE TABLE program (
     is_active BOOLEAN DEFAULT TRUE
 );
 
--- Vad för kurser
+-- Kurser
 CREATE TABLE course (
+    course_id SERIAL PRIMARY KEY,
     course_name VARCHAR(200) NOT NULL,
-    course_id SERIAL PRIMARY KEY,   
     course_code VARCHAR(20) NOT NULL UNIQUE,
     credits INTEGER NOT NULL,
     description TEXT,
@@ -57,27 +70,6 @@ CREATE TABLE person_details (
     email VARCHAR(300) UNIQUE NOT NULL
 );
 
--- Student/Elevers information
-CREATE TABLE student (
-    student_id INTEGER PRIMARY KEY REFERENCES person(person_id) ON DELETE CASCADE,
-    program_id INTEGER NOT NULL REFERENCES program(program_id),
-    class_id INTEGER NOT NULL REFERENCES class(class_id),
-    student_number VARCHAR(30) UNIQUE NOT NULL,
-    enrollment_date DATE DEFAULT CURRENT_DATE,
-    status VARCHAR(20) DEFAULT 'active'
-);
-
--- Inskrivnings datum för studenter
-CREATE TABLE student_enrollment (
-    enrollment_id SERIAL PRIMARY KEY,
-    student_id INTEGER NOT NULL REFERENCES student(student_id) ON DELETE CASCADE,
-    assignment_id INTEGER NOT NULL REFERENCES course_assignment(assignment_id) ON DELETE CASCADE,
-    enrollment_date DATE DEFAULT CURRENT_DATE,
-    grade VARCHAR(2),
-    status VARCHAR(20) DEFAULT 'enrolled',
-    UNIQUE (student_id, assignment_id)
-);
-
 -- Klasser
 CREATE TABLE class (
     class_id SERIAL PRIMARY KEY,
@@ -92,6 +84,16 @@ CREATE TABLE class (
     max_students INTEGER DEFAULT 30,
     status VARCHAR(20) DEFAULT 'planned',
     UNIQUE (program_id, iteration, class_code)
+);
+
+-- Studentinformation
+CREATE TABLE student (
+    student_id INTEGER PRIMARY KEY REFERENCES person(person_id) ON DELETE CASCADE,
+    program_id INTEGER NOT NULL REFERENCES program(program_id),
+    class_id INTEGER NOT NULL REFERENCES class(class_id),
+    student_number VARCHAR(30) UNIQUE NOT NULL,
+    enrollment_date DATE DEFAULT CURRENT_DATE,
+    status VARCHAR(20) DEFAULT 'active'
 );
 
 -- Lärare/utbildare
@@ -112,7 +114,7 @@ CREATE TABLE program_course (
     PRIMARY KEY (program_id, course_id)
 );
 
--- Kursuppgifter 
+-- Kursuppgifter / kurstillfällen
 CREATE TABLE course_assignment (
     assignment_id SERIAL PRIMARY KEY,
     course_id INTEGER NOT NULL REFERENCES course(course_id),
@@ -121,6 +123,17 @@ CREATE TABLE course_assignment (
     start_date DATE,
     end_date DATE,
     UNIQUE (course_id, class_id)
+);
+
+-- Inskrivningar på kurser
+CREATE TABLE student_enrollment (
+    enrollment_id SERIAL PRIMARY KEY,
+    student_id INTEGER NOT NULL REFERENCES student(student_id) ON DELETE CASCADE,
+    assignment_id INTEGER NOT NULL REFERENCES course_assignment(assignment_id) ON DELETE CASCADE,
+    enrollment_date DATE DEFAULT CURRENT_DATE,
+    grade VARCHAR(2),
+    status VARCHAR(20) DEFAULT 'enrolled',
+    UNIQUE (student_id, assignment_id)
 );
 
 CREATE INDEX idx_person_type ON person(person_type); 

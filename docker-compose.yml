@@ -1,0 +1,18 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: yrkesco_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: yrkesco_db
+      POSTGRES_USER: yrkesco_user
+      POSTGRES_PASSWORD: yrkesco_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./sql:/docker-entrypoint-initdb.d
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+  
